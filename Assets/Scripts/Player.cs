@@ -20,6 +20,7 @@ public class Player : MonoBehaviour
     private bool isOnGround = false;
     private bool canDoubleJump = false;
     private bool isFacingWall = false;
+    private bool isLedge = false;
 
     [Header("Slide Info")]
     [SerializeField] private float slideSpeed;
@@ -28,6 +29,10 @@ public class Player : MonoBehaviour
     private float slideTimerCounter;
     private float slideCooldownTimerCounter;
     private bool isSliding = false;
+
+    [Header("Ledge Climb Info")]
+    [SerializeField] Transform endPosition;
+    private float rbGravityScale;
 
     private void Awake()
     {
@@ -38,6 +43,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         jumpForce = defaultJumpForce;
+        rbGravityScale = rb.gravityScale;
     }
 
     private void Update()
@@ -50,7 +56,7 @@ public class Player : MonoBehaviour
 
         RaycastHit2D groundHit = Physics2D.Raycast(transform.position, Vector3.down, groundCheckDistance, whatIsGround);
         isOnGround = groundHit;
-        if(isOnGround) canDoubleJump = true;
+        if (isOnGround) canDoubleJump = true;
 
         RaycastHit2D wallHit = Physics2D.BoxCast(wallCheck.position, wallCheckSize, 0, Vector2.zero, 0, whatIsGround);
         isFacingWall = wallHit;
@@ -121,6 +127,30 @@ public class Player : MonoBehaviour
             slideTimerCounter = slideTimer;
             slideCooldownTimerCounter = slideCooldownTimer;
         }
+    }
+
+    private void LedgeClimbAnimationStart()
+    {
+        isOnGround = false;
+        canDoubleJump = false;
+        rb.gravityScale = 0;
+        rb.linearVelocity = Vector2.zero;
+        anim.SetTrigger("isLedge");
+    }
+
+    public void LedgeClimbAnimationEnd()
+    {
+        isOnGround = true;
+        canDoubleJump = true;
+        rb.gravityScale = rbGravityScale;
+        transform.position = endPosition.position;
+    }
+
+    public void SetIsLedge(bool isLedge)
+    {
+        if (this.isLedge == isLedge) return;
+        this.isLedge = isLedge;
+        if (this.isLedge) LedgeClimbAnimationStart();
     }
 
     private void OnDrawGizmos()

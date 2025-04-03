@@ -11679,7 +11679,7 @@ Transform:
   m_GameObject: {fileID: 1129792780}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 14.24, y: 3.4, z: 0}
+  m_LocalPosition: {x: 21.4, y: 5.3, z: 0}
   m_LocalScale: {x: 10.483199, y: 1.1730001, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20357,6 +20357,9 @@ MonoBehaviour:
   slideTimer: 0.4
   slideCooldownTimer: 1
   endPosition: {fileID: 1013643421}
+  speedIncreaseMultiplier: 1.1
+  maxSpeed: 25
+  milestoneDistance: 10
 --- !u!95 &1908120840
 Animator:
   serializedVersion: 7

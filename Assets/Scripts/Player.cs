@@ -34,6 +34,14 @@ public class Player : MonoBehaviour
     [SerializeField] Transform endPosition;
     private float rbGravityScale;
 
+    [Header("Speed Control Info")]
+    [SerializeField] private float speedIncreaseMultiplier;
+    [SerializeField] private float maxSpeed;
+    [SerializeField] private float milestoneDistance;
+    private float milestone;
+    private float defaultMoveSpeed;
+    private float defaultMilestoneDistance;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -44,12 +52,17 @@ public class Player : MonoBehaviour
     {
         jumpForce = defaultJumpForce;
         rbGravityScale = rb.gravityScale;
+        milestone = milestoneDistance;
+        defaultMilestoneDistance = milestoneDistance;
+        defaultMoveSpeed = moveSpeed;
     }
 
     private void Update()
     {
         if (runBegun && !isFacingWall)
             HandleMove();
+        else if (isFacingWall)
+            ResetSpeed();
 
         slideTimerCounter -= Time.deltaTime;
         slideCooldownTimerCounter -= Time.deltaTime;
@@ -71,6 +84,7 @@ public class Player : MonoBehaviour
         anim.SetBool("isOnGround", isOnGround);
         anim.SetBool("canDoubleJump", canDoubleJump);
         anim.SetBool("isSliding", isSliding);
+        if(rb.linearVelocityY <= -20 && !isLedge) anim.SetBool("canRoll", true);
 
         anim.SetFloat("xVelocity", rb.linearVelocityX);
         anim.SetFloat("yVelocity", rb.linearVelocityY);
@@ -117,6 +131,24 @@ public class Player : MonoBehaviour
             rb.linearVelocity = new Vector2(moveSpeed, rb.linearVelocity.y);
             isSliding = false;
         }
+        SpeedModifier();
+    }
+
+    private void ResetSpeed()
+    {
+        moveSpeed = defaultMoveSpeed;
+        milestoneDistance = defaultMilestoneDistance;
+    }
+
+    private void SpeedModifier()
+    {
+        if (maxSpeed > moveSpeed && transform.position.x >= milestone)
+        {
+            moveSpeed *= speedIncreaseMultiplier;
+            if (moveSpeed > maxSpeed) moveSpeed = maxSpeed;
+            milestoneDistance *= speedIncreaseMultiplier;
+            milestone += milestoneDistance;
+        }
     }
 
     private void HandleSlide()
@@ -152,6 +184,8 @@ public class Player : MonoBehaviour
         this.isLedge = isLedge;
         if (this.isLedge) LedgeClimbAnimationStart();
     }
+
+    public void RollAnimationEnd() => anim.SetBool("canRoll", false);
 
     private void OnDrawGizmos()
     {

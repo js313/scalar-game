@@ -33,6 +33,7 @@ public class LevelGenerator : MonoBehaviour
         Platform nextPlatform = Instantiate(randomPlatformType, spawnPoint, Quaternion.identity);
         nextPlatform.transform.SetParent(transform);
         lastPlatform = nextPlatform;
+
     }
 
     void DestroyUnusedPlatform()

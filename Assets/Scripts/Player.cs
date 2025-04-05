@@ -1,9 +1,12 @@
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
     private Rigidbody2D rb;
     private Animator anim;
+    private SpriteRenderer sr;
 
     [Header("Movement Info")]
     [SerializeField] private float moveSpeed;
@@ -42,10 +45,19 @@ public class Player : MonoBehaviour
     private float defaultMoveSpeed;
     private float defaultMilestoneDistance;
 
+    [Header("Knockback Info")]
+    [SerializeField] private Vector2 knockbackDir;
+    [SerializeField] private float invincibilityTime;
+    private bool canBeKnocked = true;
+    private bool isKnocked;
+
+    private bool isDead = false;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        sr = GetComponent<SpriteRenderer>();
     }
 
     private void Start()
@@ -59,10 +71,15 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        if (isKnocked || isDead) return;
+
         if (runBegun && !isFacingWall)
             HandleMove();
         else if (isFacingWall)
             ResetSpeed();
+
+        if (Input.GetKeyDown(KeyCode.K)) KnockbackStart();
+        if (Input.GetKeyDown(KeyCode.Q)) StartCoroutine(Die());
 
         slideTimerCounter -= Time.deltaTime;
         slideCooldownTimerCounter -= Time.deltaTime;
@@ -84,7 +101,9 @@ public class Player : MonoBehaviour
         anim.SetBool("isOnGround", isOnGround);
         anim.SetBool("canDoubleJump", canDoubleJump);
         anim.SetBool("isSliding", isSliding);
-        if(rb.linearVelocityY <= -20 && !isLedge) anim.SetBool("canRoll", true);
+        if (rb.linearVelocityY <= -20 && !isLedge) anim.SetBool("canRoll", true);
+        anim.SetBool("isKnocked", isKnocked);
+        anim.SetBool("isDead", isDead);
 
         anim.SetFloat("xVelocity", rb.linearVelocityX);
         anim.SetFloat("yVelocity", rb.linearVelocityY);
@@ -159,6 +178,50 @@ public class Player : MonoBehaviour
             slideTimerCounter = slideTimer;
             slideCooldownTimerCounter = slideCooldownTimer;
         }
+    }
+
+    private void KnockbackStart()
+    {
+        if (!canBeKnocked) return;
+        isKnocked = true;
+        rb.linearVelocity = knockbackDir;
+        StartCoroutine(InvincibilityRoutine());
+        StartCoroutine(AnimateInvincibility());
+    }
+
+    public void KnockbackEnd()
+    {
+        isKnocked = false;
+    }
+
+    private IEnumerator InvincibilityRoutine()
+    {
+        canBeKnocked = false;
+        yield return new WaitForSeconds(invincibilityTime);
+        canBeKnocked = true;
+    }
+
+    private IEnumerator AnimateInvincibility()
+    {
+        float percent = 0;
+        Color originalColor = sr.color;
+        Color transparentColor = new(originalColor.r, originalColor.g, originalColor.b, 0.1f);
+        float blinkDuration = invincibilityTime / 10;
+        while (percent <= 1)
+        {
+            sr.color = Color.Lerp(transparentColor, originalColor, Mathf.PingPong(Time.time / blinkDuration, 1));
+            percent += Time.deltaTime / invincibilityTime;
+            yield return null;
+        }
+        sr.color = originalColor;
+    }
+
+    private IEnumerator Die()
+    {
+        isDead = true;
+        rb.linearVelocity = knockbackDir;
+        yield return new WaitForSeconds(0.5f);
+        rb.linearVelocity *= 0;
     }
 
     private void LedgeClimbAnimationStart()

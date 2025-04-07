@@ -65,21 +65,20 @@ public class Player : MonoBehaviour
         jumpForce = defaultJumpForce;
         rbGravityScale = rb.gravityScale;
         milestone = milestoneDistance;
-        defaultMilestoneDistance = milestoneDistance;
+        defaultMilestoneDistance = transform.position.x + milestoneDistance;
         defaultMoveSpeed = moveSpeed;
     }
 
     private void Update()
     {
+        AnimatorControllers();
+
         if (isKnocked || isDead) return;
 
         if (runBegun && !isFacingWall)
             HandleMove();
         else if (isFacingWall)
             ResetSpeed();
-
-        if (Input.GetKeyDown(KeyCode.K)) KnockbackStart();
-        if (Input.GetKeyDown(KeyCode.Q)) StartCoroutine(Die());
 
         slideTimerCounter -= Time.deltaTime;
         slideCooldownTimerCounter -= Time.deltaTime;
@@ -90,8 +89,6 @@ public class Player : MonoBehaviour
 
         RaycastHit2D wallHit = Physics2D.BoxCast(wallCheck.position, wallCheckSize, 0, Vector2.zero, 0, whatIsGround);
         isFacingWall = wallHit;
-
-        AnimatorControllers();
 
         CheckInput();
     }
@@ -157,6 +154,7 @@ public class Player : MonoBehaviour
     {
         moveSpeed = defaultMoveSpeed;
         milestoneDistance = defaultMilestoneDistance;
+        milestone = transform.position.x;
     }
 
     private void SpeedModifier()
@@ -184,6 +182,7 @@ public class Player : MonoBehaviour
     {
         if (!canBeKnocked) return;
         isKnocked = true;
+        ResetSpeed();
         rb.linearVelocity = knockbackDir;
         StartCoroutine(InvincibilityRoutine());
         StartCoroutine(AnimateInvincibility());
@@ -222,8 +221,11 @@ public class Player : MonoBehaviour
         rb.linearVelocity = knockbackDir;
         yield return new WaitForSeconds(0.5f);
         rb.linearVelocity *= 0;
+        yield return new WaitForSeconds(1f);
+        GameManager.instance.ResetLevel();
     }
 
+    // BUG: Ledge Climb feature is very buggy and needs a major fix
     private void LedgeClimbAnimationStart()
     {
         isOnGround = false;
@@ -249,6 +251,14 @@ public class Player : MonoBehaviour
     }
 
     public void RollAnimationEnd() => anim.SetBool("canRoll", false);
+
+    public void Damage()
+    {
+        if (moveSpeed >= maxSpeed)
+            KnockbackStart();
+        else
+            StartCoroutine(Die());
+    }
 
     private void OnDrawGizmos()
     {

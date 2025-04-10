@@ -237,3 +237,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   floorSurface: {fileID: 8192547270328230786}
   floorSurfaceThickness: 0.1
+  floorHighlightColor: {r: 0.96525204, g: 1, b: 0.2396226, a: 0}

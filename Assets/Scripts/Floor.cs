@@ -4,6 +4,7 @@ public class Floor : MonoBehaviour
 {
     [SerializeField] private GameObject floorSurface;
     [SerializeField] private float floorSurfaceThickness;
+    [SerializeField] private Color floorHighlightColor;
     SpriteRenderer floorRenderer;
     SpriteRenderer sr;
 
@@ -21,6 +22,6 @@ public class Floor : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        floorRenderer.color = Color.white;
+        floorRenderer.color = floorHighlightColor;
     }
 }

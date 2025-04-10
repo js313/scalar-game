@@ -73,11 +73,11 @@ public class Player : MonoBehaviour
     {
         AnimatorControllers();
 
-        if (isKnocked || isDead) return;
+        if (isKnocked || isDead || isLedge) return;
 
-        if (runBegun && !isFacingWall)
+        if (runBegun && (!isFacingWall || isSliding))
             HandleMove();
-        else if (isFacingWall)
+        else if (isFacingWall && !isSliding)
             ResetSpeed();
 
         slideTimerCounter -= Time.deltaTime;
@@ -111,10 +111,10 @@ public class Player : MonoBehaviour
         if (Input.GetButtonDown("Fire2"))
             runBegun = true;
 
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetButtonDown("Jump") && runBegun)
             HandleJump();
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.LeftShift) && runBegun)
             HandleSlide();
     }
 
@@ -122,32 +122,30 @@ public class Player : MonoBehaviour
     {
         if (isOnGround)
         {
+            jumpForce = defaultJumpForce;
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             canDoubleJump = true;
-            jumpForce = doubleJumpForce;
         }
         else if (canDoubleJump)
         {
+            jumpForce = doubleJumpForce;
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             canDoubleJump = false;
-            jumpForce = defaultJumpForce;
         }
     }
 
     private void HandleMove()
     {
-        // When under a "roof" the box cast keeps detecting a wall and never calls "HandleMove" so we keep sliding
-        // And as we are resetting the "isSliding" flag in here it gives us the desired output
-        if (isOnGround && isSliding && slideTimerCounter >= 0)
+        if (isOnGround && isSliding && slideTimerCounter >= 0 && rb.linearVelocityX > 0 || (isSliding && isFacingWall) || (rb.linearVelocityX == 0 && isFacingWall))
         {
             rb.linearVelocity = new Vector2(slideSpeed, rb.linearVelocity.y);
         }
-        else
+        else if(!isFacingWall)
         {
             rb.linearVelocity = new Vector2(moveSpeed, rb.linearVelocity.y);
             isSliding = false;
         }
-        SpeedModifier();
+        if(rb.linearVelocityX > 0) SpeedModifier();
     }
 
     private void ResetSpeed()
@@ -170,7 +168,7 @@ public class Player : MonoBehaviour
 
     private void HandleSlide()
     {
-        if (rb.linearVelocity.x > 0 && slideCooldownTimerCounter < 0)
+        if (slideCooldownTimerCounter < 0 && rb.linearVelocityX > 0 || (rb.linearVelocityX == 0 && isFacingWall))
         {
             isSliding = true;
             slideTimerCounter = slideTimer;
@@ -232,7 +230,7 @@ public class Player : MonoBehaviour
         canDoubleJump = false;
         rb.gravityScale = 0;
         rb.linearVelocity = Vector2.zero;
-        anim.SetTrigger("isLedge");
+        anim.SetBool("isLedge", true);
     }
 
     public void LedgeClimbAnimationEnd()
@@ -241,11 +239,12 @@ public class Player : MonoBehaviour
         canDoubleJump = true;
         rb.gravityScale = rbGravityScale;
         transform.position = endPosition.position;
+        anim.SetBool("isLedge", false);
     }
 
     public void SetIsLedge(bool isLedge)
     {
-        if (this.isLedge == isLedge) return;
+        if (this.isLedge == isLedge || !isFacingWall) return;
         this.isLedge = isLedge;
         if (this.isLedge) LedgeClimbAnimationStart();
     }

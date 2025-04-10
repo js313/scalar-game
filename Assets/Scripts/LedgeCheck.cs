@@ -6,7 +6,7 @@ public class LedgeCheck : MonoBehaviour
     Player player;
     [SerializeField] private float ledgeCheckRadius;
     [SerializeField] private LayerMask whatIsGround;
-    private bool canCheck = true;
+    private int canCheck = 0;
 
     void Start()
     {
@@ -15,7 +15,7 @@ public class LedgeCheck : MonoBehaviour
 
     void Update()
     {
-        if (canCheck)
+        if (canCheck == 0)
         {
             RaycastHit2D isLedge = Physics2D.CircleCast(transform.position, ledgeCheckRadius, Vector2.zero, 0, whatIsGround);
             player.SetIsLedge(isLedge);
@@ -26,7 +26,7 @@ public class LedgeCheck : MonoBehaviour
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
-            canCheck = false;
+            canCheck++;
             player.SetIsLedge(false);
         }
     }
@@ -35,7 +35,7 @@ public class LedgeCheck : MonoBehaviour
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
-            canCheck = true;
+            canCheck--;
         }
     }
 

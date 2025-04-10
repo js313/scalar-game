@@ -4,7 +4,7 @@ public class LevelGenerator : MonoBehaviour
 {
     [SerializeField] Platform[] platformTypes;
     [SerializeField] float spawnDistanceThreshold;
-    [SerializeField] float destriyDistanceThreshold;
+    [SerializeField] float destroyDistanceThreshold;
 
     Player player;
     Platform lastPlatform;
@@ -41,7 +41,7 @@ public class LevelGenerator : MonoBehaviour
         Transform platformToDelete = transform.GetChild(0);
         if (platformToDelete != null && player != null)
         {
-            if (player.transform.position.x - platformToDelete.position.x >= destriyDistanceThreshold) Destroy(platformToDelete.gameObject);
+            if (player.transform.position.x - platformToDelete.position.x >= destroyDistanceThreshold) Destroy(platformToDelete.gameObject);
         }
     }
 }

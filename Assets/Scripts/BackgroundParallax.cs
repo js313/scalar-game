@@ -20,7 +20,7 @@ public class BackgroundParallax : MonoBehaviour
 
     void Update()
     {
-        float distanceMoved = cam.transform.position.x * (1 - parallaxSpeed);   // Why??
+        float distanceMoved = cam.transform.position.x * (1 - parallaxSpeed);
         float distanceToMove = cam.transform.position.x * parallaxSpeed;
         transform.position = new Vector3(xPosition + distanceToMove, transform.position.y, transform.position.z);
         if (distanceMoved > len + xPosition)

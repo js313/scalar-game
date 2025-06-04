@@ -108,8 +108,8 @@ public class Player : MonoBehaviour
 
     private void CheckInput()
     {
-        if (Input.GetButtonDown("Fire2"))
-            runBegun = true;
+        //if (Input.GetButtonDown("Fire2"))
+        //    runBegun = true;
 
         if (Input.GetButtonDown("Jump") && runBegun)
             HandleJump();
@@ -257,6 +257,11 @@ public class Player : MonoBehaviour
             KnockbackStart();
         else
             StartCoroutine(Die());
+    }
+
+    public void StartRun()
+    {
+        runBegun = true;
     }
 
     private void OnDrawGizmos()
